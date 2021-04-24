@@ -1,8 +1,8 @@
 '''
 
-File: config.py
+File: bluestone_config.py
 
-Project: bluestone
+Project: bluestone esp32 camera
 
 Author: daniel dong
 
@@ -58,10 +58,10 @@ class BluestoneConfig(object):
         exist = bluestone_common.BluestoneCommon.check_file_exist(self.config_file)
         if exist:
             config = self.read_config()
-            #_config_log.info("Read config from {}, the content is {}".format(self.config_file, config))
+            print("Read config from {}, the content is {}".format(self.config_file, config))
         else:
             self.create_config()
-            #_config_log.info("Config {} does not exist, creating a new one".format(self.config_file))
+            print("Config {} does not exist, creating a new one".format(self.config_file))
     
         return config
 
@@ -104,6 +104,6 @@ class BluestoneConfig(object):
         new_config = ujson.dumps(config)
 
         with open(path, 'w') as f:
-            #_config_log.info("New config is {}".format(new_config))
+            print("New config is {}".format(new_config))
             f.write(new_config)
         

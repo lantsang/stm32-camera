@@ -1,8 +1,8 @@
 '''
 
-File: uart.py
+File: bluestone_uart.py
 
-Project: bluestone
+Project: bluestone esp32 camera
 
 Author: daniel dong
 
@@ -19,6 +19,7 @@ import _thread
 from machine import UART
 
 import bluestone_config
+import bluestone_camera
 
 # logging.basicConfig(level = logging.INFO)
 # _uart_log = logging.getLogger("UART")
@@ -31,6 +32,7 @@ class BlueStoneUart(object):
 
         self.bs_config = None
         self.bs_data_config = None
+        self.bs_camera = None
         self.uart_config = {}
         self.uart_name_list = ['uart1', 'uart2']
         
@@ -39,12 +41,15 @@ class BlueStoneUart(object):
     def _init(self):
         self.bs_config = bluestone_config.BluestoneConfig('config.json')
         self.bs_data_config = bluestone_config.BluestoneConfig('data.json')
+        self.bs_camera = bluestone_camera.BlueStoneCamera()
 
-    # def _handle_cmd(self, key, config):
-    #     try:
-    #         _uart_log.info("Handle command, the key is {}".format(key))
-    #     except Exception as err:
-    #         _uart_log.error("Cannot handle command for uart, the error is {}".format(err))
+    def _handle_cmd(self, key, config):
+        try:
+            print("Handle command, the key is {}".format(key))
+            if key == 'camera':
+                self.bs_camera.start_capture()
+        except Exception as err:
+            print("Cannot handle command for uart, the error is {}".format(err))
 
     def check_key_exist(self, key):
         if key is None:
@@ -54,7 +59,7 @@ class BlueStoneUart(object):
         return False
 
     def _uart_read(self, name, uart):
-        #_uart_log.info("UART {} start with {}".format(name, uart))
+        print("UART {} start with {}".format(name, uart))
         config = None
         loop = True
         restart = False
@@ -67,11 +72,11 @@ class BlueStoneUart(object):
                 continue
 
             if num:
-                #_uart_log.info("UART ready data length is {}".format(num))
+                print("UART ready data length is {}".format(num))
                 msg = uart.read(num)
                 # 初始数据是字节类型（bytes）,将字节类型数据进行编码
                 utf8_msg = msg.decode()
-                #_uart_log.info("UART read message is {}".format(utf8_msg))
+                print("UART read message is {}".format(utf8_msg))
 
                 try:
                     config_setting = ujson.loads(utf8_msg)
@@ -83,7 +88,7 @@ class BlueStoneUart(object):
                         exist = self.bs_config.check_key_exist(key)
                         if exist:
                             self.bs_config.update_config(key, config)
-                        #self._handle_cmd(key, config)
+                        self._handle_cmd(key, config)
                     if name in config_keys:
                         config = config_setting[name] # 保证重启逻辑的数据正确性
                         loop = False
@@ -94,14 +99,14 @@ class BlueStoneUart(object):
                             loop = False
                 except Exception as err:
                     utime.sleep_ms(300)
-	                #_uart_log.error("Cannot handle read command for uart, the error is {}".format(err))
+                    print("Cannot handle read command for uart, the error is {}".format(err))
             else:
                 continue
             utime.sleep_ms(300)
 
         if restart:
             restart = False
-            #_uart_log.info("New configuration was received from uart, restarting system to take effect")
+            print("New configuration was received from uart, restarting system to take effect")
             Power.powerRestart()
         else:
             self.restart_uart(name, config)
@@ -119,21 +124,21 @@ class BlueStoneUart(object):
             uart = self.init_uart(name, uart_config)
             uart.write(payload)
             utime.sleep_ms(1000)
-            #_uart_log.info("Write payload {} to {}".format(ujson.dumps(payload), name))
+            print("Write payload {} to {}".format(ujson.dumps(payload), name))
         except Exception as err:
             utime.sleep_ms(1000)
-            #_uart_log.error("Cannot write payload to {}, the error is {}".format(name, err))
+            print("Cannot write payload to {}, the error is {}".format(name, err))
         
     def restart_uart(self, name, config):
-        #_uart_log.info("Try to close {}".format(name))
+        print("Try to close {}".format(name))
         uart.close()
-        #_uart_log.info("{} was closed".format(name))
+        print("{} was closed".format(name))
 
         if name in self.uart_name_list:
             self.uart_read(name, config)
     
     def init_uart(self, name, config):
-        #_uart_log.info("Config is {}".format(config))
+        print("Config is {}".format(config))
 
         port = 1
         if name == 'uart2':
@@ -149,7 +154,7 @@ class BlueStoneUart(object):
 
         self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "rx":rx, "tx":tx, "stop_bits":stop_bits, "time_out":time_out}
 
-        return UART(port, baudrate=baud_rate, bits=data_bits, parity=parity, rx=rx, tx=tx, stop=stop_bits, time=time_out)
+        return UART(port, baudrate=baud_rate, bits=data_bits, parity=parity, stop=stop_bits)
 
     def start(self, name, config):
         if name in self.uart_name_list:

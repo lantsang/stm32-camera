@@ -1,8 +1,8 @@
 '''
 
-File: common.py
+File: bluestone_common.py
 
-Project: bluestone
+Project: bluestone esp32 camera
 
 Author: daniel dong
 
