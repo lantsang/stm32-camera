@@ -40,13 +40,12 @@ def init_uart(config):
     bs_uart = bluestone_uart.BlueStoneUart()
 
     init_one_uart(config, 'uart1')
-    init_one_uart(config, 'uart2')
     
 def init_one_uart(config, name):
     global bs_config, bs_uart
     
     uart_config = bs_config.read_config_by_name(config, name)
     if uart_config is None:
-        uart_config = ujson.loads('{"baud_rate":115200,"data_bits":8,"parity":0,"rx":14,"tx":15,stop_bits":1,"time_out":0}')
+        uart_config = ujson.loads('{"baud_rate":115200,"data_bits":8,"parity":0,"stop_bits":1}')
         bs_config.update_config(name, uart_config)
     bs_uart.start(name, uart_config)

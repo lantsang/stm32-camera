@@ -27,8 +27,23 @@ class BluestoneConfig(object):
     def __init__(self, file_name):
         self.config_file = file_name
         self.key_list = ['uart1', 'uart2']
+        self.restart_key_list = ['uart1', 'uart2']
         
         BluestoneConfig.inst = self
+        
+    def check_key_restart(self, key):
+        if key is None:
+            return False
+        if key in self.restart_key_list:
+            return True
+        return False
+
+    def check_key_exist(self, key):
+        if key is None:
+            return False
+        if key in self.key_list:
+            return True
+        return False
 
     def get_value(self, config, key):
         if (config is None) or (key is None):

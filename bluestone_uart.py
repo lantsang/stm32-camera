@@ -34,7 +34,7 @@ class BlueStoneUart(object):
         self.bs_data_config = None
         self.bs_camera = None
         self.uart_config = {}
-        self.uart_name_list = ['uart1', 'uart2']
+        self.uart_name_list = ['uart1']
         
         self._init()
 
@@ -46,8 +46,8 @@ class BlueStoneUart(object):
     def _handle_cmd(self, key, config):
         try:
             print("Handle command, the key is {}".format(key))
-            if key == 'camera':
-                self.bs_camera.start_capture()
+            #if key == 'camera':
+            self.bs_camera.start_capture()
         except Exception as err:
             print("Cannot handle command for uart, the error is {}".format(err))
 
@@ -66,8 +66,10 @@ class BlueStoneUart(object):
     
         while loop:
             num = uart.any()
+            print("Number1 is {}".format(num))
             utime.sleep_ms(50)
             num2 = uart.any()
+            print("Number2 is {}".format(num2))
             if num != num2:
                 continue
 
@@ -147,12 +149,9 @@ class BlueStoneUart(object):
         baud_rate = self.bs_config.get_int_value(config, "baud_rate")
         data_bits = self.bs_config.get_int_value(config, "data_bits")
         parity = self.bs_config.get_int_value(config, "parity")
-        rx = self.bs_config.get_int_value(config, "rx")
-        tx = self.bs_config.get_int_value(config, "tx")
         stop_bits = self.bs_config.get_int_value(config, "stop_bits")
-        time_out = self.bs_config.get_int_value(config, "time_out")
 
-        self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "rx":rx, "tx":tx, "stop_bits":stop_bits, "time_out":time_out}
+        self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits}
 
         return UART(port, baudrate=baud_rate, bits=data_bits, parity=parity, stop=stop_bits)
 
