@@ -44,7 +44,7 @@ class BlueStoneCamera(object):
         time.sleep(5)
     
         number = None
-        with open(self.file_name) as f:
+        with open(self.file_name, 'w+') as f:
             number = f.read()
         print('Number is {}'.format(number))
         if not number:

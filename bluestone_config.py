@@ -26,8 +26,8 @@ class BluestoneConfig(object):
 
     def __init__(self, file_name):
         self.config_file = file_name
-        self.key_list = ['uart1', 'uart2']
-        self.restart_key_list = ['uart1', 'uart2']
+        self.key_list = ['uart0', 'uart1', 'uart2']
+        self.restart_key_list = ['uart0', 'uart1', 'uart2']
         
         BluestoneConfig.inst = self
         
@@ -88,7 +88,7 @@ class BluestoneConfig(object):
     def read_config(self):
         path = self.config_file.replace(':', '')
         content = None
-        with open(path) as f:
+        with open(path, 'r') as f:
             content = f.read()
         return content
 

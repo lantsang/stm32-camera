@@ -12,6 +12,8 @@ Copyright 2021 - 2021 bluestone tech
 
 '''
 
+import uos
+import machine
 import utime
 import ujson
 #import logging
@@ -34,7 +36,7 @@ class BlueStoneUart(object):
         self.bs_data_config = None
         self.bs_camera = None
         self.uart_config = {}
-        self.uart_name_list = ['uart1']
+        self.uart_name_list = ['uart0', 'uart1', 'uart2']
         
         self._init()
 
@@ -62,14 +64,11 @@ class BlueStoneUart(object):
         print("UART {} start with {}".format(name, uart))
         config = None
         loop = True
-        restart = False
     
         while loop:
             num = uart.any()
-            print("Number1 is {}".format(num))
             utime.sleep_ms(50)
             num2 = uart.any()
-            print("Number2 is {}".format(num2))
             if num != num2:
                 continue
 
@@ -94,23 +93,15 @@ class BlueStoneUart(object):
                     if name in config_keys:
                         config = config_setting[name] # 保证重启逻辑的数据正确性
                         loop = False
-                        restart = False
-                    else:
-                        restart = self.bs_config.check_key_restart(key)
-                        if restart:
-                            loop = False
                 except Exception as err:
-                    utime.sleep_ms(300)
+                    utime.sleep_ms(50)
                     print("Cannot handle read command for uart, the error is {}".format(err))
             else:
+                utime.sleep_ms(50)
                 continue
-            utime.sleep_ms(300)
+            utime.sleep_ms(50)
 
-        if restart:
-            restart = False
-            print("New configuration was received from uart, restarting system to take effect")
-            Power.powerRestart()
-        else:
+        if config:
             self.restart_uart(name, config)
     
     def uart_read(self, name, config):
@@ -142,8 +133,10 @@ class BlueStoneUart(object):
     def init_uart(self, name, config):
         print("Config is {}".format(config))
 
-        port = 1
-        if name == 'uart2':
+        port = 0
+        if name == 'uart1':
+            port = 1
+        elif name == 'uart2':
             port = 2
 
         baud_rate = self.bs_config.get_int_value(config, "baud_rate")
@@ -153,8 +146,9 @@ class BlueStoneUart(object):
 
         self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits}
 
-        return UART(port, baudrate=baud_rate, bits=data_bits, parity=parity, stop=stop_bits)
+        return UART(port,baudrate=baud_rate,tx=14,rx=13,timeout=10)
 
     def start(self, name, config):
-        if name in self.uart_name_list:
-            _thread.start_new_thread(self.uart_read, (name, config))
+        _thread.start_new_thread(self.uart_read, (name, config))
+        # if name in self.uart_name_list:
+        #     _thread.start_new_thread(self.uart_read, (name, config))

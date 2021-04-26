@@ -12,9 +12,6 @@ Copyright 2021 - 2021 bluestone tech
 
 '''
 
-import uos
-import machine
 import main
 
-uos.mount(machine.SDCard(), "/sd")
-main.start_uart()
+main.start()
