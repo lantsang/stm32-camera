@@ -14,4 +14,4 @@ Copyright 2021 - 2021 bluestone tech
 
 import main
 
-main.start()
+main.start_uart()

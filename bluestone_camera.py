@@ -25,35 +25,24 @@ class BlueStoneCamera(object):
     def __init__(self):
         BlueStoneCamera.inst = self
         
-        self.file_name = 'number.txt'
+        self.file_name = 'capture.jpg'
         self.led = machine.Pin(4, machine.Pin.OUT)
 
     def take_one_picture(self, image_file):
         camera.init()
+        
         self.led.on()
-        time.sleep(0.5)
+        time.sleep_ms(500)
         
         buf = camera.capture()
         self.led.off()
-        camera.deinit()
-        
+
         with open(image_file, 'wb') as f:
             f.write(buf)
+            
+        camera.deinit()
 
     def start_capture(self):
-        time.sleep(5)
-    
-        number = None
-        with open(self.file_name, 'w+') as f:
-            number = f.read()
-        print('Number is {}'.format(number))
-        if not number:
-            number = 1
-
-        self.take_one_picture('sd/Image' + str(number) + '.jpg')
-    
-        new_number = int(number) + 1
-        print('New number is {}'.format(new_number))
-        with open(self.file_name, 'w') as f:
-            f.write(str(new_number))
+        time.sleep_ms(5000)
+        self.take_one_picture(self.file_name)
         #machine.deepsleep()

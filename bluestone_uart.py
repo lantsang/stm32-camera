@@ -146,9 +146,8 @@ class BlueStoneUart(object):
 
         self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits}
 
-        return UART(port,baudrate=baud_rate,tx=14,rx=13,timeout=10)
+        return UART(port, baudrate=baud_rate, tx=14, rx=13, timeout=10)
 
     def start(self, name, config):
-        _thread.start_new_thread(self.uart_read, (name, config))
-        # if name in self.uart_name_list:
-        #     _thread.start_new_thread(self.uart_read, (name, config))
+        if name in self.uart_name_list:
+            _thread.start_new_thread(self.uart_read, (name, config))
