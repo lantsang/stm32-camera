@@ -25,24 +25,34 @@ class BlueStoneCamera(object):
     def __init__(self):
         BlueStoneCamera.inst = self
         
-        self.file_name = 'capture.jpg'
+        self.image_file_name = 'capture'
+        self.image_file = self.image_file_name + '.jpg'
         self.led = machine.Pin(4, machine.Pin.OUT)
 
-    def take_one_picture(self, image_file):
-        camera.init()
-        
-        self.led.on()
-        time.sleep_ms(500)
-        
-        buf = camera.capture()
-        self.led.off()
+    def get_image_file_name(self):
+        return self.image_file_name
+    
+    def get_image_file(self):
+        return self.image_file
 
-        with open(image_file, 'wb') as f:
-            f.write(buf)
+    def take_one_picture(self):
+        try:
+            camera.init()
             
-        camera.deinit()
-
+            self.led.on()
+            time.sleep_ms(500)
+            
+            buf = camera.capture()
+            self.led.off()
+            
+            with open(self.image_file, 'wb') as f:
+                f.write(buf)
+        except Exception as err:
+            print("Cannot save one picture to {}, the error is {}".format(self.image_file, err))
+        finally:
+            camera.deinit()
+       
     def start_capture(self):
-        time.sleep_ms(5000)
-        self.take_one_picture(self.file_name)
+        #time.sleep_ms(5000)
+        self.take_one_picture()
         #machine.deepsleep()

@@ -70,8 +70,8 @@ class BluestoneConfig(object):
     def init_config(self):
         config = None
 
-        exist = bluestone_common.BluestoneCommon.check_file_exist(self.config_file)
-        if exist:
+        key_exist = bluestone_common.BluestoneCommon.check_file_exist(self.config_file)
+        if key_exist:
             config = self.read_config()
             print("Read config from {}, the content is {}".format(self.config_file, config))
         else:

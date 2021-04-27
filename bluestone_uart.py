@@ -16,10 +16,12 @@ import uos
 import machine
 import utime
 import ujson
+import ubinascii
 #import logging
 import _thread
 from machine import UART
 
+import bluestone_common
 import bluestone_config
 import bluestone_camera
 
@@ -36,7 +38,8 @@ class BlueStoneUart(object):
         self.bs_data_config = None
         self.bs_camera = None
         self.uart_config = {}
-        self.uart_name_list = ['uart0', 'uart1', 'uart2']
+        self.uart_name_list = ['uart2']
+        self.uart_list = {}
         
         self._init()
 
@@ -48,10 +51,40 @@ class BlueStoneUart(object):
     def _handle_cmd(self, key, config):
         try:
             print("Handle command, the key is {}".format(key))
-            #if key == 'camera':
-            self.bs_camera.start_capture()
+            if key == 'capture':
+                self.bs_camera.start_capture()
+                uart_name = None
+                if self.uart_name_list and len(self.uart_name_list) > 0:
+                    uart_name = self.uart_name_list[0]
+                if uart_name:
+                    self.send_image(uart_name)
+                    print("Write image binary to {}".format(uart_name))
         except Exception as err:
             print("Cannot handle command for uart, the error is {}".format(err))
+
+    def send_image(self, uart_name):
+        image_file_name = self.bs_camera.get_image_file_name()
+        image_file = self.bs_camera.get_image_file()
+        random_image_file = '{}_{}.jpg'.format(image_file_name, bluestone_common.BluestoneCommon.generate_random_str())
+        try:
+            with open(image_file, 'rb') as f:
+                while True:
+                    raw_data = f.read(1024) #1024 * 7
+                    if raw_data and len(raw_data) > 0:
+                        message = {'image':{}}
+                        message['image']['image_file'] = random_image_file
+                        # base64编码，生成新的可字符化的二进制序列
+                        base64_data = ubinascii.b2a_base64(raw_data)
+                        # 字符串化，使用utf-8的方式解析二进制
+                        base64_str = str(base64_data, 'utf-8')
+                        message['image']['image_binary'] = base64_str
+                        
+                        self.uart_write(uart_name, ujson.dumps(message))
+                    if not raw_data or len(raw_data) < 1024:
+                        break
+                    utime.sleep_ms(300)
+        except Exception as err:
+            print("Cannot read {}, the error is {}".format(image_file, err))
 
     def check_key_exist(self, key):
         if key is None:
@@ -108,19 +141,16 @@ class BlueStoneUart(object):
         uart = self.init_uart(name, config)
         self._uart_read(name, uart)
     
-    def uart_write(self, name, payload):
+    def uart_write(self, name, data):
         try:
-            config_data = self.bs_config.read_config()
-            config = ujson.loads(config_data)
-            uart_config = self.bs_config.get_value(config, name)
-            
-            uart = self.init_uart(name, uart_config)
-            uart.write(payload)
-            utime.sleep_ms(1000)
-            print("Write payload {} to {}".format(ujson.dumps(payload), name))
+            uart = self.uart_list[name]
+            if uart:
+                uart.write(data)
+                print("Write {} bytes to {}".format(len(data), name))
+                utime.sleep_ms(1000)
         except Exception as err:
             utime.sleep_ms(1000)
-            print("Cannot write payload to {}, the error is {}".format(name, err))
+            print("Cannot write data to {}, the error is {}".format(name, err))
         
     def restart_uart(self, name, config):
         print("Try to close {}".format(name))
@@ -146,7 +176,10 @@ class BlueStoneUart(object):
 
         self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits}
 
-        return UART(port, baudrate=baud_rate, tx=14, rx=13, timeout=10)
+        uart = UART(port, baudrate=baud_rate, tx=14, rx=13, timeout=10)
+        self.uart_list[name] = uart
+        
+        return uart
 
     def start(self, name, config):
         if name in self.uart_name_list:
