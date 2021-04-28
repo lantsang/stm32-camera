@@ -37,14 +37,18 @@ class BlueStoneCamera(object):
 
     def take_one_picture(self):
         try:
+            # 相机初始化
             camera.init()
             
+            # 开启闪光灯并保持500毫秒
             self.led.on()
             time.sleep_ms(500)
             
+            # 摄像头抓拍，然后关闭闪光灯
             buf = camera.capture()
             self.led.off()
             
+            # 保存抓拍图片到文件
             with open(self.image_file, 'wb') as f:
                 f.write(buf)
         except Exception as err:
