@@ -62,6 +62,13 @@ class BlueStoneUart(object):
         except Exception as err:
             print("Cannot handle command for uart, the error is {}".format(err))
 
+    def send_image_end_flag(self, uart_name, image_file_name):
+        message = {'image':{}}
+        message['image']['image_file'] = image_file_name
+        message['image']['image_end'] = True
+                        
+        self.uart_write(uart_name, ujson.dumps(message))
+    
     def send_image(self, uart_name):
         image_file_name = self.bs_camera.get_image_file_name()
         image_file = self.bs_camera.get_image_file()
@@ -83,6 +90,7 @@ class BlueStoneUart(object):
                     if not raw_data or len(raw_data) < 1024:
                         break
                     utime.sleep_ms(300)
+            self.send_image_end_flag(uart_name, random_image_file)
         except Exception as err:
             print("Cannot read {}, the error is {}".format(image_file, err))
 
