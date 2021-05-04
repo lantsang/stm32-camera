@@ -61,6 +61,6 @@ def init_one_uart(config, name):
     
     uart_config = bs_config.read_config_by_name(config, name)
     if uart_config is None:
-        uart_config = ujson.loads('{"baud_rate":115200, "data_bits":8, "parity":0, "stop_bits":1}')
+        uart_config = ujson.loads('{"baud_rate":115200, "data_bits":8, "parity":0, "stop_bits":1, "tx":14, "rx":13, "timeout":10}')
         bs_config.update_config(name, uart_config)
     bs_uart.start(name, uart_config)

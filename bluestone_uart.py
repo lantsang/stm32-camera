@@ -181,10 +181,13 @@ class BlueStoneUart(object):
         data_bits = self.bs_config.get_int_value(config, "data_bits")
         parity = self.bs_config.get_int_value(config, "parity")
         stop_bits = self.bs_config.get_int_value(config, "stop_bits")
+        tx = self.bs_config.get_int_value(config, "tx")
+        rx = self.bs_config.get_int_value(config, "rx")
+        timeout = self.bs_config.get_int_value(config, "timeout")
 
-        self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits}
+        self.uart_config[name] = {"baud_rate":baud_rate, "data_bits":data_bits, "parity":parity, "stop_bits":stop_bits, "tx":tx, "rx":rx, "timeout":timeout}
 
-        uart = UART(port, baudrate=baud_rate, tx=14, rx=13, timeout=10)
+        uart = UART(port, baudrate=baud_rate, tx=tx, rx=rx, timeout=timeout)
         self.uart_list[name] = uart
         
         return uart
