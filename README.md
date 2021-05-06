@@ -47,45 +47,38 @@
 ### 4.1 EC600S
 具体代码导入步骤参考[移远EC600 SmartDtu 说明文档](https://gitee.com/lantsang/smart-dtu)
 ### 4.2 ESP32-CAM
-1. 安装esptool
-
+#### 4.2.1 安装esptool
 ```bash
 pip install esptool
 ```
-2. 进入引导模式
-
+#### 4.2.2 引导模式
 将USB转TTL串口转换器连接到ESP32-CAM开发板上，并将IO0和地连接起来，这样就可以进入引导模式
 
-3. 格式化ESP32-CAM
-
+#### 4.2.3 格式化ESP32-CAM
 按一下RST键，然后执行如下命令来擦除ESP32-CAM的Flash
 ```bash
 esptool.py --port COM27 erash_flash
 ```
 > 注：Windows下COM27要根据实际端口号替换，Linux下为/dev/ttyUSB0
 
-4. 刷入固件
-
+#### 4.2.4 刷入固件
 进入固件所在的目录，然后按一下RST按钮，之后执行如下命令：
 ```bash
 esptool.py --chip esp32 --port COM27 --baud 460800 write_flash -z 0x1000 ESP32CAM_fireware.bin
 ```
 现在固件已经刷入ESP32-CAM开发板上了，断开IO0与地之间的连接，然后再按一次RST按钮
 
-5. 安装ampy工具
-
+#### 4.2.5 安装ampy工具
 ```bash
 pip install adafruit-ampy
 ```
 
-6. 下载应用代码
-
+#### 4.2.6 下载应用代码
 ```bash
 git clone https://gitlab.lantsang.cn/bluestone/bs-stm32-camera.git
 ```
 
-7. 将应用代码下载到ESP32-CAM开发板
-
+#### 4.2.7 将应用代码下载到ESP32-CAM开发板
 ```bash
 ampy --port COM27 put boot.py
 ampy --port COM27 put main.py
@@ -94,12 +87,10 @@ ampy --port COM27 put bluestone_common.py
 ampy --port COM27 put bluestone_uart.py
 ```
 
-8. 启动应用程序
-
+#### 4.2.8 启动应用程序
 直接再按一次RST键，ESP32-CAM上的应用程序就会自动开始运行
 
-9. 下发指令
-
+#### 4.2.9 下发指令
 打开软件后台，找到注册上来并在线的设备，然后选择UART1，在消息窗口输入：
 ```json
 {"capture": 1}
